@@ -85,4 +85,20 @@ public class AuthController {
         userService.withdraw(userId);
         return ResponseEntity.ok(ApiResponse.success());
     }
+
+    /** 비밀번호 재설정 코드 발송 — 이메일 존재 여부와 무관하게 동일 응답 (보안) */
+    @PostMapping("/password/forgot")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @RequestBody @Valid ForgotPasswordRequest request) {
+        userService.forgotPassword(request);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    /** 비밀번호 재설정 — 코드 검증 후 새 비밀번호 저장 */
+    @PostMapping("/password/reset")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @RequestBody @Valid ResetPasswordRequest request) {
+        userService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
 }

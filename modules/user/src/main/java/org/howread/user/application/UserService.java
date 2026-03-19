@@ -10,6 +10,7 @@ import org.howread.user.domain.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.SecureRandom;
 
@@ -31,6 +32,7 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtPort jwtPort;
     private final EmailPort emailPort;
+    private final ProfileImagePort profileImagePort;
     private final NicknameGenerator nicknameGenerator;
     private final PasswordEncoder passwordEncoder;
 
@@ -140,6 +142,114 @@ public class UserService {
         refreshTokenRepository.deleteByUserId(userId);
     }
 
+    /** 내 프로필 조회. */
+    public UserProfileResponse getMyProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        String imageUrl = user.getProfileImageKey() != null
+                ? profileImagePort.buildUrl(user.getProfileImageKey())
+                : null;
+
+        return new UserProfileResponse(
+                user.getEmail(),
+                user.getNickname(),
+                imageUrl,
+                user.getRole().name(),
+                user.getCreatedAt(),
+                user.getLastLoginAt()
+        );
+    }
+
+    /**
+     * 비밀번호 변경.
+     * 현재 비밀번호 검증 → 새 비밀번호 해시 → User.changePassword().
+     */
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new BusinessException(UserErrorCode.PASSWORD_INVALID);
+        }
+
+        user.changePassword(passwordEncoder.encode(request.newPassword()));
+    }
+
+    /**
+     * 닉네임 변경.
+     * 중복 확인 → User.changeNickname().
+     */
+    @Transactional
+    public void changeNickname(Long userId, ChangeNicknameRequest request) {
+        if (userRepository.existsByNickname(request.nickname())) {
+            throw new BusinessException(UserErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        user.changeNickname(request.nickname());
+    }
+
+    /**
+     * 프로필 이미지 변경.
+     * 기존 이미지가 있으면 S3에서 삭제 → 새 이미지 업로드 → key 저장 → CloudFront URL 반환.
+     */
+    @Transactional
+    public String changeProfileImage(Long userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        if (user.getProfileImageKey() != null) {
+            profileImagePort.delete(user.getProfileImageKey());
+        }
+
+        String key = profileImagePort.upload(userId, file);
+        user.changeProfileImageKey(key);
+
+        return profileImagePort.buildUrl(key);
+    }
+
+    /**
+     * 비밀번호 재설정 코드 발송.
+     * 존재하지 않는 이메일도 보안상 동일 응답 (사용자 존재 여부 노출 방지).
+     */
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        if (!userRepository.existsByEmail(request.email())) {
+            return;
+        }
+
+        String code = generateCode();
+        EmailVerification ev = EmailVerification.create(request.email(), code);
+        emailVerificationRepository.save(ev);
+        emailPort.sendPasswordResetCode(request.email(), code);
+    }
+
+    /**
+     * 비밀번호 재설정.
+     * 인증코드 검증 → 새 비밀번호 해시 → User.changePassword().
+     */
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        EmailVerification ev = emailVerificationRepository.findLatestByEmail(request.email())
+                .orElseThrow(() -> new BusinessException(UserErrorCode.EMAIL_NOT_VERIFIED));
+
+        if (ev.isExpired()) {
+            throw new BusinessException(UserErrorCode.VERIFICATION_CODE_EXPIRED);
+        }
+        if (!ev.isCodeMatch(request.code())) {
+            throw new BusinessException(UserErrorCode.VERIFICATION_CODE_INVALID);
+        }
+
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        user.changePassword(passwordEncoder.encode(request.newPassword()));
+    }
+
     private TokenResponse issueTokens(User user) {
         String accessToken = jwtPort.generateAccessToken(user.getId(), user.getRole());
         String refreshToken = jwtPort.generateRefreshToken(user.getId());
@@ -158,4 +268,5 @@ public class UserService {
         return String.format("%0" + CODE_LENGTH + "d",
                 new SecureRandom().nextInt((int) Math.pow(10, CODE_LENGTH)));
     }
+
 }

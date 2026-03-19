@@ -1,6 +1,8 @@
 spring:
   application:
     name: howread-backend
+  profiles:
+    active: local
   jpa:
     open-in-view: false   # OSIV 비활성화: 커넥션을 뷰 렌더링까지 유지하면 커넥션 고갈 위험
   mail:
@@ -16,3 +18,12 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-expiry: 21600    # 6시간 (초)
   refresh-token-expiry: 604800  # 7일 (초)
+
+aws:
+  region: ${AWS_REGION}
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  s3:
+    bucket: ${AWS_S3_BUCKET}
+  cloudfront:
+    domain: ${AWS_CLOUDFRONT_DOMAIN}
