@@ -5,7 +5,6 @@ import org.howread.book.application.port.BookRepository;
 import org.howread.book.application.port.BookSearchPort;
 import org.howread.book.domain.Book;
 import org.howread.common.exception.BusinessException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,17 +32,11 @@ class BookServiceTest {
     @Mock
     private BookSearchPort bookSearchPort;
 
+    @Mock
+    private BookRegistrar bookRegistrar;
+
     @InjectMocks
     private BookService bookService;
-
-    @BeforeEach
-    void injectSelf() throws Exception {
-        // @Lazy @Autowired self 필드는 Spring 컨텍스트 없이 null이 된다.
-        // 단위 테스트에서는 self = bookService 자신을 주입하여 saveBook()이 정상 호출되게 한다.
-        var selfField = BookService.class.getDeclaredField("self");
-        selfField.setAccessible(true);
-        selfField.set(bookService, bookService);
-    }
 
     private static Book createTestBook(Long id, String isbn) {
         Book book = Book.create(isbn, "클린 코드", "로버트 마틴", "인사이트",
@@ -110,20 +103,20 @@ class BookServiceTest {
         }
 
         @Test
-        @DisplayName("DB에 없으면 외부 API 조회 후 저장하고 반환한다")
-        void registerBook_notExists_savesAndReturns() {
+        @DisplayName("DB에 없으면 외부 API 조회 후 BookRegistrar에 위임하고 반환한다")
+        void registerBook_notExists_delegatesToRegistrar() {
             String isbn = "9781234567890";
             BookSearchResult searchResult = createSearchResult(isbn);
             Book saved = createTestBook(1L, isbn);
 
             given(bookRepository.findByIsbn(isbn)).willReturn(Optional.empty());
             given(bookSearchPort.findByIsbn(isbn)).willReturn(Optional.of(searchResult));
-            given(bookRepository.save(any(Book.class))).willReturn(saved);
+            given(bookRegistrar.register(searchResult)).willReturn(BookResponse.from(saved));
 
             BookResponse result = bookService.registerBook(isbn);
 
             assertThat(result.isbn()).isEqualTo(isbn);
-            verify(bookRepository).save(any(Book.class));
+            verify(bookRegistrar).register(searchResult);
         }
 
         @Test
