@@ -79,9 +79,15 @@ public class JwtProvider implements JwtPort {
     }
 
     @Override
+    public UserRole extractRole(String token) {
+        String role = parseClaims(token).get(ROLE_CLAIM, String.class);
+        return UserRole.valueOf(role);
+    }
+
+    @Override
     public LocalDateTime extractRefreshTokenExpiresAt(String token) {
         Date expiration = parseClaims(token).getExpiration();
-        return expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        return expiration.toInstant().atZone(ZoneId.of("UTC")).toLocalDateTime();
     }
 
     @Override

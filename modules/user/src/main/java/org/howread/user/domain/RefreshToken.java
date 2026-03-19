@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * Refresh Token 엔티티.
@@ -45,6 +46,6 @@ public class RefreshToken {
     }
 
     public boolean isExpired() {
-        return LocalDateTime.now().isAfter(this.expiresAt);
+        return LocalDateTime.now(ZoneOffset.UTC).isAfter(this.expiresAt);
     }
 }

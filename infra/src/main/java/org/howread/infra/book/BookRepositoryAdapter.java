@@ -33,11 +33,6 @@ public class BookRepositoryAdapter implements BookRepository {
     }
 
     @Override
-    public List<Book> findByTitleContaining(String keyword) {
-        return jpaRepository.findByTitleContaining(keyword);
-    }
-
-    @Override
     public boolean existsByIsbn(String isbn) {
         return jpaRepository.existsByIsbn(isbn);
     }

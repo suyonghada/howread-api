@@ -73,9 +73,12 @@ public class BookService {
      * 두 경로 모두 동일한 커서 페이지네이션 응답을 반환한다.
      */
     public BookCursorPageResponse getBooks(BookSearchCondition condition, Long cursorId, int size) {
+        // size+1개를 조회하여 다음 페이지 존재 여부를 판단한다.
+        // 실제로 size+1개가 반환되면 hasNext=true, 그렇지 않으면 마지막 페이지다.
+        int fetchSize = size + 1;
         List<Book> books = condition.isEmpty()
-                ? bookRepository.findBooksBeforeCursor(cursorId, size)
-                : bookRepository.searchBooks(condition, cursorId, size);
+                ? bookRepository.findBooksBeforeCursor(cursorId, fetchSize)
+                : bookRepository.searchBooks(condition, cursorId, fetchSize);
 
         List<BookResponse> responses = books.stream().map(BookResponse::from).toList();
         return BookCursorPageResponse.of(responses, size);

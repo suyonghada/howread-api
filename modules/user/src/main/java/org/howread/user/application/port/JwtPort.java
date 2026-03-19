@@ -18,6 +18,8 @@ public interface JwtPort {
 
     Long extractUserId(String token);
 
+    UserRole extractRole(String token);
+
     /** 토큰 만료 시각. RefreshToken 엔티티 생성 시 expiresAt 계산에 사용. */
     LocalDateTime extractRefreshTokenExpiresAt(String token);
 

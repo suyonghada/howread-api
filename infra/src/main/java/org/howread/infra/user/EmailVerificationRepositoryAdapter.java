@@ -27,4 +27,9 @@ public class EmailVerificationRepositoryAdapter implements EmailVerificationRepo
     public EmailVerification save(EmailVerification emailVerification) {
         return jpaRepository.save(emailVerification);
     }
+
+    @Override
+    public void deleteByEmail(String email) {
+        jpaRepository.deleteByEmail(email);
+    }
 }

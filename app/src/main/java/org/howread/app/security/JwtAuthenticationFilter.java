@@ -43,11 +43,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 jwtPort.validate(token);
                 Long userId = jwtPort.extractUserId(token);
+                String role = jwtPort.extractRole(token).name();
 
-                // AccessToken에서 userId만으로 인증 객체를 생성한다.
-                // DB 조회 없이 토큰 클레임만으로 처리하여 매 요청마다 DB 부하를 방지한다.
+                // DB 조회 없이 토큰 클레임만으로 인증 객체를 생성한다.
+                // Spring Security 관례상 권한은 "ROLE_" 접두사를 붙인다.
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userId, null, List.of());
+                        new UsernamePasswordAuthenticationToken(
+                                userId, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {
                 log.debug("JWT 인증 실패: {}", e.getMessage());

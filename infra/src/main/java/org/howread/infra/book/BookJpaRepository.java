@@ -14,8 +14,6 @@ public interface BookJpaRepository extends JpaRepository<Book, Long> {
 
     boolean existsByIsbn(String isbn);
 
-    List<Book> findByTitleContaining(String keyword);
-
     /**
      * 커서 기반 페이지네이션 쿼리.
      *

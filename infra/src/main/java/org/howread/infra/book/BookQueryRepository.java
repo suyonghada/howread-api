@@ -45,12 +45,12 @@ public class BookQueryRepository {
 
     /** 제목 부분 일치 (null 또는 빈 문자열이면 조건 제외) */
     private BooleanExpression titleContains(String title) {
-        return (title != null && !title.isBlank()) ? book.title.containsIgnoreCase(title) : null;
+        return (title != null && !title.isBlank()) ? book.title.contains(title) : null;
     }
 
     /** 저자 부분 일치 */
     private BooleanExpression authorContains(String author) {
-        return (author != null && !author.isBlank()) ? book.author.containsIgnoreCase(author) : null;
+        return (author != null && !author.isBlank()) ? book.author.contains(author) : null;
     }
 
     /** ISBN 정확히 일치 */

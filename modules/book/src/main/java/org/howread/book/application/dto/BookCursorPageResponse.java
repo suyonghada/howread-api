@@ -17,8 +17,19 @@ public record BookCursorPageResponse(
         Long nextCursor,
         boolean hasNext
 ) {
-    public static BookCursorPageResponse of(List<BookResponse> data, int requestedSize) {
-        boolean hasNext = data.size() == requestedSize;
+    /**
+     * size+1개를 조회한 결과로 응답을 만든다.
+     *
+     * rawData가 size+1개이면 다음 페이지가 있다는 뜻이므로 마지막 요소를 제거하고
+     * 남은 마지막 요소의 id를 nextCursor로 설정한다.
+     * size+1개 미만이면 마지막 페이지이므로 nextCursor는 null이다.
+     *
+     * @param rawData       size+1개를 요청하여 받은 원본 데이터
+     * @param requestedSize 클라이언트가 요청한 실제 페이지 크기
+     */
+    public static BookCursorPageResponse of(List<BookResponse> rawData, int requestedSize) {
+        boolean hasNext = rawData.size() > requestedSize;
+        List<BookResponse> data = hasNext ? rawData.subList(0, requestedSize) : rawData;
         Long nextCursor = hasNext ? data.getLast().id() : null;
         return new BookCursorPageResponse(data, nextCursor, hasNext);
     }

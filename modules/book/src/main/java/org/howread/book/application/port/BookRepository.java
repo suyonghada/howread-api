@@ -12,8 +12,6 @@ public interface BookRepository {
 
     Optional<Book> findByIsbn(String isbn);
 
-    List<Book> findByTitleContaining(String keyword);
-
     boolean existsByIsbn(String isbn);
 
     Book save(Book book);
