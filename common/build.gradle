@@ -6,6 +6,9 @@
 // - 공통 인터페이스/마커 (DomainEvent 등 EDA 확장 포인트)
 
 dependencies {
+    // HttpStatus를 ErrorCode 인터페이스에서 사용하기 위해 필요.
+    // starter-webmvc 전체가 아닌 spring-web 단독으로 최소 의존성 유지.
+    implementation 'org.springframework:spring-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
