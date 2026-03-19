@@ -19,7 +19,10 @@ import java.time.ZoneOffset;
  * 대량 삭제(deleteByUserId) 시 JPA 연관 로드 없이 처리할 수 있다.
  */
 @Entity
-@Table(name = "refresh_tokens")
+@Table(name = "refresh_tokens", indexes = {
+        @Index(name = "idx_refresh_tokens_user_id", columnList = "userId"),
+        @Index(name = "idx_refresh_tokens_token", columnList = "token", unique = true)
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken {

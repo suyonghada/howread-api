@@ -14,7 +14,9 @@ import java.time.LocalDateTime;
  * 인증코드는 발급 후 10분간 유효하며, 검증 성공 시 verified = true로 변경된다.
  */
 @Entity
-@Table(name = "email_verifications")
+@Table(name = "email_verifications", indexes = {
+        @Index(name = "idx_email_verifications_email", columnList = "email")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailVerification {

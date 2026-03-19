@@ -5,6 +5,7 @@ import org.howread.book.application.port.BookRepository;
 import org.howread.book.application.port.BookSearchPort;
 import org.howread.book.domain.Book;
 import org.howread.common.exception.BusinessException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,15 @@ class BookServiceTest {
 
     @InjectMocks
     private BookService bookService;
+
+    @BeforeEach
+    void injectSelf() throws Exception {
+        // @Lazy @Autowired self 필드는 Spring 컨텍스트 없이 null이 된다.
+        // 단위 테스트에서는 self = bookService 자신을 주입하여 saveBook()이 정상 호출되게 한다.
+        var selfField = BookService.class.getDeclaredField("self");
+        selfField.setAccessible(true);
+        selfField.set(bookService, bookService);
+    }
 
     private static Book createTestBook(Long id, String isbn) {
         Book book = Book.create(isbn, "클린 코드", "로버트 마틴", "인사이트",

@@ -6,6 +6,8 @@ import org.howread.book.application.port.BookRepository;
 import org.howread.book.application.port.BookSearchPort;
 import org.howread.book.domain.Book;
 import org.howread.common.exception.BusinessException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,18 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BookSearchPort bookSearchPort;
 
+    /**
+     * Self-injection: saveBook()을 프록시를 통해 호출하기 위해 필요하다.
+     *
+     * registerBook()에서 this.saveBook()을 직접 호출하면 Spring AOP 프록시를 우회하여
+     * saveBook()의 @Transactional(쓰기)이 무시되고, 클래스 레벨의 readOnly 트랜잭션 안에서
+     * INSERT가 실행되어 오류가 발생한다.
+     * self.saveBook()으로 호출하면 프록시를 거쳐 새 쓰기 트랜잭션이 정상적으로 시작된다.
+     */
+    @Lazy
+    @Autowired
+    private BookService self;
+
     /** 외부 API로 책 검색. DB에 저장하지 않고 검색 결과만 반환한다. */
     public List<BookSearchResponse> searchBooks(String query) {
         return bookSearchPort.search(query)
@@ -37,18 +51,29 @@ public class BookService {
     /**
      * ISBN으로 책을 DB에 등록한다 (idempotent).
      *
-     * 이미 등록된 ISBN이면 기존 Book을 반환하고,
-     * 없으면 외부 API에서 조회 후 DB에 저장한다.
-     * 이렇게 하면 클라이언트가 중복 등록을 신경 쓰지 않아도 되고,
-     * 검색 결과에서 바로 "등록" 버튼을 눌러도 안전하다.
+     * DB 조회 → 이미 있으면 즉시 반환, 없으면 외부 API 조회 후 저장한다.
+     *
+     * 외부 API 호출을 @Transactional 범위 밖에서 수행한다.
+     * 카카오 API 응답이 1~2초 걸리는 동안 DB 커넥션을 점유하면
+     * 동시 요청이 많을 때 커넥션 풀이 고갈되기 때문이다.
      */
-    @Transactional
     public BookResponse registerBook(String isbn) {
         return bookRepository.findByIsbn(isbn)
                 .map(BookResponse::from)
                 .orElseGet(() -> {
+                    // 트랜잭션 밖에서 외부 API 호출
                     BookSearchResult result = bookSearchPort.findByIsbn(isbn)
                             .orElseThrow(() -> new BusinessException(BookErrorCode.BOOK_NOT_FOUND));
+                    return self.saveBook(result);
+                });
+    }
+
+    @Transactional
+    public BookResponse saveBook(BookSearchResult result) {
+        // 동시 요청에 의한 중복 등록을 방어: 저장 직전 재확인
+        return bookRepository.findByIsbn(result.isbn())
+                .map(BookResponse::from)
+                .orElseGet(() -> {
                     Book book = Book.create(
                             result.isbn(), result.title(), result.author(),
                             result.publisher(), result.publishedDate(),
