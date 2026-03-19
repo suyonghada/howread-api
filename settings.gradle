@@ -1,1 +1,8 @@
 rootProject.name = 'howread'
+
+include 'app'
+include 'common'
+include 'infra'
+include 'modules:book'
+include 'modules:review'
+include 'modules:user'
