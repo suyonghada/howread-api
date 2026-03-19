@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException e) {
-        log.warn("BusinessException: {}", e.getMessage());
+        log.warn("비즈니스 예외 발생: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getHttpStatus())
                 .body(ApiResponse.fail(e.getErrorCode()));
@@ -54,8 +54,7 @@ public class GlobalExceptionHandler {
         FieldError fieldError = e.getBindingResult().getFieldErrors().get(0);
         ApiError apiError = ApiError.of(CommonErrorCode.INVALID_INPUT_VALUE.getCode(), fieldError.getDefaultMessage());
 
-        log.warn("MethodArgumentNotValidException: field={}, message={}",
-                fieldError.getField(), fieldError.getDefaultMessage());
+        log.warn("입력값 검증 실패: 필드={}, 메시지={}", fieldError.getField(), fieldError.getDefaultMessage());
 
         return ResponseEntity
                 .status(CommonErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
@@ -69,7 +68,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
-        log.error("Unhandled exception", e);
+        log.error("처리되지 않은 예외 발생", e);
         return ResponseEntity
                 .status(CommonErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
                 .body(ApiResponse.fail(CommonErrorCode.INTERNAL_SERVER_ERROR));
