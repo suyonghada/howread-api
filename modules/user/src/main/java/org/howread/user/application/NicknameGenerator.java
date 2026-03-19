@@ -9,36 +9,36 @@ import java.util.function.Predicate;
 /**
  * 무작위 닉네임 생성기.
  *
- * 형식: 형용사 + 명사(동물) + 3자리 숫자 — 예: HappyTiger042
- * 중복 시 최대 10회 재시도하고, 초과 시 UUID suffix를 붙여 고유성을 보장한다.
+ * 형식: 형용사 + 동물 + 3자리 숫자 — 예: 용감한호랑이042
+ * 중복 시 최대 10회 재시도하고, 초과 시 nanoTime suffix를 붙여 고유성을 보장한다.
  */
 @Component
 public class NicknameGenerator {
 
     private static final List<String> ADJECTIVES = List.of(
-            "Happy", "Brave", "Clever", "Swift", "Bold",
-            "Calm", "Eager", "Fancy", "Gentle", "Jolly",
-            "Keen", "Lively", "Merry", "Noble", "Proud",
-            "Quiet", "Rapid", "Shiny", "Witty", "Zesty",
-            "Bright", "Crisp", "Daring", "Fierce", "Graceful",
-            "Humble", "Icy", "Jazzy", "Kind", "Lucky",
-            "Mighty", "Nimble", "Odd", "Peppy", "Royal",
-            "Silly", "Tiny", "Unique", "Vivid", "Wacky",
-            "Active", "Bubbly", "Cozy", "Dreamy", "Epic",
-            "Funky", "Groovy", "Heroic", "Ideal", "Jumpy"
+            "용감한", "빠른", "똑똑한", "행복한", "씩씩한",
+            "차분한", "열정적인", "귀여운", "신중한", "활발한",
+            "영리한", "다정한", "강인한", "유쾌한", "온화한",
+            "날쌘", "재빠른", "반짝이는", "재치있는", "풍요로운",
+            "밝은", "담대한", "용맹한", "늠름한", "우아한",
+            "겸손한", "날카로운", "멋진", "친절한", "운좋은",
+            "힘찬", "민첩한", "독특한", "생기있는", "화려한",
+            "고요한", "작은", "특별한", "생동감있는", "엉뚱한",
+            "활기찬", "발랄한", "포근한", "몽환적인", "웅장한",
+            "펑키한", "경쾌한", "영웅적인", "이상적인", "통통한"
     );
 
     private static final List<String> ANIMALS = List.of(
-            "Tiger", "Eagle", "Panda", "Falcon", "Otter",
-            "Koala", "Lynx", "Moose", "Narwhal", "Osprey",
-            "Penguin", "Quail", "Rabbit", "Salmon", "Toucan",
-            "Urial", "Viper", "Walrus", "Xerus", "Yak",
-            "Zebra", "Alpaca", "Bison", "Condor", "Dingo",
-            "Elk", "Ferret", "Gibbon", "Heron", "Ibis",
-            "Jackal", "Kite", "Lemur", "Marmot", "Newt",
-            "Ocelot", "Parrot", "Quokka", "Raven", "Sloth",
-            "Tapir", "Umbra", "Vole", "Weasel", "Xenops",
-            "Yapok", "Zorilla", "Axolotl", "Basilisk", "Capybara"
+            "호랑이", "독수리", "판다", "매", "수달",
+            "코알라", "스라소니", "무스", "일각고래", "물수리",
+            "펭귄", "메추리", "토끼", "연어", "투칸",
+            "아이벡스", "독사", "바다코끼리", "다람쥐", "야크",
+            "얼룩말", "알파카", "들소", "콘도르", "딩고",
+            "엘크", "페럿", "긴팔원숭이", "왜가리", "따오기",
+            "자칼", "솔개", "여우원숭이", "마모트", "도롱뇽",
+            "오셀롯", "앵무새", "쿼카", "까마귀", "나무늘보",
+            "맥", "족제비", "두더지", "담비", "카피바라",
+            "도마뱀", "악어", "고슴도치", "미어캣", "불곰"
     );
 
     private static final int MAX_RETRIES = 10;
@@ -56,7 +56,6 @@ public class NicknameGenerator {
                 return nickname;
             }
         }
-        // 10회 재시도 후에도 충돌 시 UUID 앞 8자로 고유성 보장
         return buildNickname() + Long.toHexString(System.nanoTime()).substring(0, 4).toUpperCase();
     }
 
