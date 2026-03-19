@@ -13,19 +13,21 @@ import java.util.List;
 
 /**
  * 도서 관련 API 엔드포인트.
- * 모든 엔드포인트는 JWT 인증이 필요하다 (SecurityConfig에서 설정).
+ * GET 엔드포인트는 비인증 허용, POST는 JWT 인증 필요 (SecurityConfig 참고).
  */
 @RestController
 @RequestMapping("/api/v1/books")
 @RequiredArgsConstructor
 public class BookController {
 
-    private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int MAX_PAGE_SIZE = 100;
 
     private final BookService bookService;
 
-    /** 외부 API(카카오)로 책 검색. DB에 저장하지 않고 결과만 반환한다. */
+    /**
+     * 외부 API(카카오)로 책 검색.
+     * DB에 저장하지 않고 카카오 검색 결과만 반환한다.
+     */
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<BookSearchResponse>>> searchBooks(
             @RequestParam String query) {
@@ -51,16 +53,27 @@ public class BookController {
     }
 
     /**
-     * 커서 기반 페이지네이션으로 책 목록 조회.
+     * DB 내 책 목록 조회 (커서 페이지네이션).
      *
+     * title, author, isbn 파라미터를 조합하여 DB 내에서 검색할 수 있다.
+     * 조건이 없으면 전체 목록을 최신순으로 반환한다.
+     * 각 조건은 AND로 결합되며, title/author는 부분 일치, isbn은 정확히 일치한다.
+     *
+     * @param title  제목 검색어 (부분 일치)
+     * @param author 저자 검색어 (부분 일치)
+     * @param isbn   ISBN (정확히 일치)
      * @param cursor 마지막으로 받은 bookId (null이면 첫 페이지)
      * @param size   페이지 크기 (기본값 20, 최대 100)
      */
     @GetMapping
     public ResponseEntity<ApiResponse<BookCursorPageResponse>> getBooks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) String isbn,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") int size) {
+        BookSearchCondition condition = new BookSearchCondition(title, author, isbn);
         int clampedSize = Math.min(size, MAX_PAGE_SIZE);
-        return ResponseEntity.ok(ApiResponse.success(bookService.getBooks(cursor, clampedSize)));
+        return ResponseEntity.ok(ApiResponse.success(bookService.getBooks(condition, cursor, clampedSize)));
     }
 }

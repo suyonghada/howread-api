@@ -66,16 +66,18 @@ public class BookService {
     }
 
     /**
-     * 커서 기반 페이지네이션으로 책 목록 조회.
+     * 책 목록 조회 (커서 페이지네이션).
      *
-     * cursorId가 null이면 첫 페이지, 있으면 해당 id보다 작은 항목을 반환한다.
-     * 응답의 nextCursor를 다음 요청의 cursor 파라미터로 사용한다.
+     * 검색 조건이 하나라도 있으면 QueryDSL 동적 쿼리로 필터링하고,
+     * 조건이 없으면 단순 커서 조회를 사용한다.
+     * 두 경로 모두 동일한 커서 페이지네이션 응답을 반환한다.
      */
-    public BookCursorPageResponse getBooks(Long cursorId, int size) {
-        List<BookResponse> books = bookRepository.findBooksBeforeCursor(cursorId, size)
-                .stream()
-                .map(BookResponse::from)
-                .toList();
-        return BookCursorPageResponse.of(books, size);
+    public BookCursorPageResponse getBooks(BookSearchCondition condition, Long cursorId, int size) {
+        List<Book> books = condition.isEmpty()
+                ? bookRepository.findBooksBeforeCursor(cursorId, size)
+                : bookRepository.searchBooks(condition, cursorId, size);
+
+        List<BookResponse> responses = books.stream().map(BookResponse::from).toList();
+        return BookCursorPageResponse.of(responses, size);
     }
 }

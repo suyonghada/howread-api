@@ -1,5 +1,6 @@
 package org.howread.book.application.port;
 
+import org.howread.book.application.dto.BookSearchCondition;
 import org.howread.book.domain.Book;
 
 import java.util.List;
@@ -27,4 +28,16 @@ public interface BookRepository {
      * @param size     한 번에 가져올 항목 수
      */
     List<Book> findBooksBeforeCursor(Long cursorId, int size);
+
+    /**
+     * 조건 기반 DB 검색 + 커서 페이지네이션.
+     *
+     * title, author, isbn 조건을 AND로 결합하며, 각 조건은 부분 일치(LIKE)를 지원한다.
+     * isbn은 정확히 일치(=)로 검색한다.
+     *
+     * @param condition 검색 조건 (null 또는 빈 값인 필드는 무시)
+     * @param cursorId  커서 (null이면 첫 페이지)
+     * @param size      반환할 최대 항목 수
+     */
+    List<Book> searchBooks(BookSearchCondition condition, Long cursorId, int size);
 }
