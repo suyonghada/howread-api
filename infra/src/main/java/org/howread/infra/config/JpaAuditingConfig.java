@@ -1,14 +1,9 @@
 package org.howread.infra.config;
 
-import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-
-import javax.sql.DataSource;
-import java.util.Map;
 
 /**
  * JPA 공통 설정.
@@ -19,23 +14,12 @@ import java.util.Map;
  * @EnableJpaRepositories: Spring Boot의 AutoConfigurationPackages는 @SpringBootApplication
  *   위치(org.howread.app)만 등록하므로, infra 패키지의 JPA Repository를 자동으로 스캔하지 못한다.
  *
- * entityManagerFactory: 도메인 엔티티가 modules:* 패키지에 있으므로 packagesToScan을
- *   org.howread 전체로 설정해 Spring Boot 4.x의 자동 엔티티 스캔 한계를 보완한다.
+ * @EntityScan: 도메인 엔티티가 modules:* 패키지에 위치하므로, Spring Boot 4.x 기준
+ *   org.springframework.boot.persistence.autoconfigure.EntityScan으로 전체 스캔 범위를 확장한다.
  */
 @Configuration
 @EnableJpaAuditing
-@EnableJpaRepositories(basePackages = "org.howread.infra",
-        entityManagerFactoryRef = "entityManagerFactory")
+@EnableJpaRepositories(basePackages = "org.howread.infra")
+@EntityScan(basePackages = "org.howread")
 public class JpaAuditingConfig {
-
-    @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            DataSource dataSource) {
-        return builder
-                .dataSource(dataSource)
-                .packages("org.howread")
-                .properties(Map.of())
-                .build();
-    }
 }
