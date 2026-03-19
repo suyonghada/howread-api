@@ -20,4 +20,7 @@ public interface EmailVerificationRepository {
     Optional<EmailVerification> findLatestByEmail(String email);
 
     EmailVerification save(EmailVerification emailVerification);
+
+    /** 해당 이메일의 모든 인증 레코드를 삭제한다. */
+    void deleteByEmail(String email);
 }

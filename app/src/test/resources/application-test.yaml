@@ -21,3 +21,8 @@ aws:
     bucket: test-bucket
   cloudfront:
     domain: test.cloudfront.net
+
+kakao:
+  api:
+    key: test-kakao-key
+    book-search-url: http://localhost:8080/mock/kakao

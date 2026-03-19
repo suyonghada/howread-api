@@ -43,9 +43,10 @@ public class UserService {
         }
     }
 
-    /** 이메일 인증번호 발송. 6자리 코드를 생성하고 DB 저장 후 이메일 발송. */
+    /** 이메일 인증번호 발송. 기존 레코드를 모두 삭제하고 새 코드를 저장 후 이메일 발송. */
     @Transactional
     public void sendVerificationCode(String email) {
+        emailVerificationRepository.deleteByEmail(email);
         String code = generateCode();
         EmailVerification ev = EmailVerification.create(email, code);
         emailVerificationRepository.save(ev);
@@ -84,6 +85,7 @@ public class UserService {
         String encodedPassword = passwordEncoder.encode(password);
         User user = User.create(email, encodedPassword, nickname);
         userRepository.save(user);
+        emailVerificationRepository.deleteByEmail(email);
 
         return issueTokens(user);
     }
