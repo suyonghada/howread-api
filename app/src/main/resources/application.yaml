@@ -1,3 +1,5 @@
 spring:
   application:
     name: howread-backend
+  jpa:
+    open-in-view: false   # OSIV 비활성화: 커넥션을 뷰 렌더링까지 유지하면 커넥션 고갈 위험
