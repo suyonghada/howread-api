@@ -6,15 +6,16 @@ import org.howread.book.application.dto.BookSearchResult;
 import org.howread.book.application.port.BookSearchPort;
 import org.howread.common.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -39,6 +40,7 @@ public class KakaoBookSearchAdapter implements BookSearchPort {
         this.bookSearchUrl = bookSearchUrl;
         this.restClient = RestClient.builder()
                 .defaultHeader("Authorization", "KakaoAK " + apiKey)
+                .requestFactory(createRequestFactory())
                 .build();
     }
 
@@ -94,6 +96,17 @@ public class KakaoBookSearchAdapter implements BookSearchPort {
                 doc.thumbnail(),
                 doc.contents()
         );
+    }
+
+    /**
+     * 연결 타임아웃 3초, 읽기 타임아웃 5초.
+     * 카카오 API 지연이 무한정 커넥션을 점유하지 못하도록 제한한다.
+     */
+    private static SimpleClientHttpRequestFactory createRequestFactory() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofSeconds(3));
+        factory.setReadTimeout(Duration.ofSeconds(5));
+        return factory;
     }
 
     /**

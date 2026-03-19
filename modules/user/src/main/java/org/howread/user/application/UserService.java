@@ -26,6 +26,7 @@ import java.security.SecureRandom;
 public class UserService {
 
     private static final int CODE_LENGTH = 6;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UserRepository userRepository;
     private final EmailVerificationRepository emailVerificationRepository;
@@ -185,12 +186,12 @@ public class UserService {
      */
     @Transactional
     public void changeNickname(Long userId, ChangeNicknameRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
         if (userRepository.existsByNickname(request.nickname())) {
             throw new BusinessException(UserErrorCode.NICKNAME_ALREADY_EXISTS);
         }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         user.changeNickname(request.nickname());
     }
@@ -268,7 +269,7 @@ public class UserService {
 
     private String generateCode() {
         return String.format("%0" + CODE_LENGTH + "d",
-                new SecureRandom().nextInt((int) Math.pow(10, CODE_LENGTH)));
+                SECURE_RANDOM.nextInt((int) Math.pow(10, CODE_LENGTH)));
     }
 
 }

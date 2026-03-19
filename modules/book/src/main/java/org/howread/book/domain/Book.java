@@ -16,7 +16,9 @@ import java.time.LocalDate;
  */
 @Entity
 @Table(name = "books", indexes = {
-        @Index(name = "idx_books_isbn", columnList = "isbn", unique = true)
+        @Index(name = "idx_books_isbn", columnList = "isbn", unique = true),
+        @Index(name = "idx_books_title", columnList = "title"),
+        @Index(name = "idx_books_author", columnList = "author")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

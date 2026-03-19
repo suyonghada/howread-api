@@ -32,6 +32,9 @@ class BookServiceTest {
     @Mock
     private BookSearchPort bookSearchPort;
 
+    @Mock
+    private BookRegistrar bookRegistrar;
+
     @InjectMocks
     private BookService bookService;
 
@@ -100,20 +103,20 @@ class BookServiceTest {
         }
 
         @Test
-        @DisplayName("DB에 없으면 외부 API 조회 후 저장하고 반환한다")
-        void registerBook_notExists_savesAndReturns() {
+        @DisplayName("DB에 없으면 외부 API 조회 후 BookRegistrar에 위임하고 반환한다")
+        void registerBook_notExists_delegatesToRegistrar() {
             String isbn = "9781234567890";
             BookSearchResult searchResult = createSearchResult(isbn);
             Book saved = createTestBook(1L, isbn);
 
             given(bookRepository.findByIsbn(isbn)).willReturn(Optional.empty());
             given(bookSearchPort.findByIsbn(isbn)).willReturn(Optional.of(searchResult));
-            given(bookRepository.save(any(Book.class))).willReturn(saved);
+            given(bookRegistrar.register(searchResult)).willReturn(BookResponse.from(saved));
 
             BookResponse result = bookService.registerBook(isbn);
 
             assertThat(result.isbn()).isEqualTo(isbn);
-            verify(bookRepository).save(any(Book.class));
+            verify(bookRegistrar).register(searchResult);
         }
 
         @Test
