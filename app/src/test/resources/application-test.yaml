@@ -1,0 +1,14 @@
+spring:
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+jwt:
+  secret: test-secret-key-must-be-at-least-256bits-long-for-hs256
+  access-token-expiry: 3600
+  refresh-token-expiry: 86400
