@@ -12,3 +12,12 @@ jwt:
   secret: test-secret-key-must-be-at-least-256bits-long-for-hs256
   access-token-expiry: 3600
   refresh-token-expiry: 86400
+
+aws:
+  region: ap-northeast-2
+  access-key-id: ''
+  secret-access-key: ''
+  s3:
+    bucket: test-bucket
+  cloudfront:
+    domain: test.cloudfront.net

@@ -24,7 +24,9 @@ public enum UserErrorCode implements ErrorCode {
     PASSWORD_INVALID(HttpStatus.BAD_REQUEST, "USER_007", "현재 비밀번호가 올바르지 않습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "USER_008", "유효하지 않은 토큰입니다."),
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "USER_009", "토큰이 만료되었습니다."),
-    DELETED_ACCOUNT(HttpStatus.FORBIDDEN, "USER_010", "탈퇴한 계정입니다.");
+    DELETED_ACCOUNT(HttpStatus.FORBIDDEN, "USER_010", "탈퇴한 계정입니다."),
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "USER_011", "지원하지 않는 파일 형식입니다. (jpeg, png, webp)"),
+    FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "USER_012", "파일 크기는 10MB 이하여야 합니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
