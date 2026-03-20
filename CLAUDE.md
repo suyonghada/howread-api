@@ -111,3 +111,4 @@ org.howread.review
     - 커밋 메시지는 Conventional Commits 규약을 따릅니다.
     - PR 생성 시, 설계의 타당성이 잘 드러나도록 작성하세요.
     - 작업은 반드시 브랜치를 분리해서 하세요. (Github Workflow)
+    - 작업 단위로 세분화하여 커밋하세요.

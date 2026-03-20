@@ -50,6 +50,14 @@ public class Book extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    /** 이 책의 별점 평균 (0.0이면 별점 없음). 점진적 평균 공식으로 O(1) 갱신. */
+    @Column(nullable = false)
+    private double averageRating = 0.0;
+
+    /** 이 책에 등록된 별점 수. 텍스트 리뷰 수와 별개다. */
+    @Column(nullable = false)
+    private int ratingCount = 0;
+
     /**
      * 외부 API 검색 결과로부터 Book을 생성하는 팩토리 메서드.
      * 생성 규칙을 한 곳에서 관리하여 일관성을 보장한다.
@@ -66,5 +74,43 @@ public class Book extends BaseEntity {
         book.thumbnailUrl = thumbnailUrl;
         book.description = description;
         return book;
+    }
+
+    /**
+     * 별점이 새로 등록될 때 평균 별점과 별점 수를 갱신한다.
+     *
+     * 점진적 평균 공식을 사용하여 O(1)로 갱신한다:
+     * newAvg = (oldAvg * n + rating) / (n + 1)
+     */
+    public void addRating(int rating) {
+        this.averageRating = (this.averageRating * this.ratingCount + rating) / (this.ratingCount + 1);
+        this.ratingCount++;
+    }
+
+    /**
+     * 별점이 삭제될 때 평균 별점과 별점 수를 갱신한다.
+     *
+     * newAvg = (oldAvg * n - rating) / (n - 1)
+     */
+    public void removeRating(int rating) {
+        if (this.ratingCount <= 1) {
+            this.averageRating = 0.0;
+            this.ratingCount = 0;
+            return;
+        }
+        this.averageRating = (this.averageRating * this.ratingCount - rating) / (this.ratingCount - 1);
+        this.ratingCount--;
+    }
+
+    /**
+     * 별점이 변경될 때 평균 별점을 재계산한다.
+     *
+     * newAvg = (oldAvg * n - oldRating + newRating) / n
+     */
+    public void changeRating(int oldRating, int newRating) {
+        if (this.ratingCount <= 0) {
+            return;
+        }
+        this.averageRating = (this.averageRating * this.ratingCount - oldRating + newRating) / this.ratingCount;
     }
 }

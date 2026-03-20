@@ -67,6 +67,37 @@ public class BookService {
     }
 
     /**
+     * 별점이 새로 등록될 때 평균 별점과 별점 수를 갱신한다.
+     * dirty checking으로 save() 없이 트랜잭션 커밋 시 자동 UPDATE된다.
+     */
+    @Transactional
+    public void addRatingStats(Long bookId, int rating) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BusinessException(BookErrorCode.BOOK_NOT_FOUND));
+        book.addRating(rating);
+    }
+
+    /**
+     * 별점이 삭제될 때 평균 별점과 별점 수를 갱신한다.
+     */
+    @Transactional
+    public void removeRatingStats(Long bookId, int rating) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BusinessException(BookErrorCode.BOOK_NOT_FOUND));
+        book.removeRating(rating);
+    }
+
+    /**
+     * 별점이 변경될 때 평균 별점을 재계산한다.
+     */
+    @Transactional
+    public void changeRating(Long bookId, int oldRating, int newRating) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BusinessException(BookErrorCode.BOOK_NOT_FOUND));
+        book.changeRating(oldRating, newRating);
+    }
+
+    /**
      * 책 목록 조회 (커서 페이지네이션).
      * <p>
      * 검색 조건이 하나라도 있으면 QueryDSL 동적 쿼리로 필터링하고, 조건이 없으면 단순 커서 조회를 사용한다. 두 경로 모두 동일한 커서 페이지네이션 응답을 반환한다.
