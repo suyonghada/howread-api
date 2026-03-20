@@ -28,10 +28,11 @@ aws:
   cloudfront:
     domain: ${AWS_CLOUDFRONT_DOMAIN}
 
-kakao:
+aladin:
   api:
-    key: ${KAKAO_REST_API_KEY}
-    book-search-url: https://dapi.kakao.com/v3/search/book
+    ttbkey: ${ALADIN_TTB_KEY}
+    search-url: https://www.aladin.co.kr/ttb/api/ItemSearch.aspx
+    lookup-url: https://www.aladin.co.kr/ttb/api/ItemLookUp.aspx
 
 management:
   health:
