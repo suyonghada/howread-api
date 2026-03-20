@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BookCursorPageResponseTest {
 
     private static BookResponse fakeResponse(long id) {
-        return new BookResponse(id, "isbn-" + id, "제목" + id, "저자", null, null, null, null);
+        return new BookResponse(id, "isbn-" + id, "제목" + id, "저자", null, null, null, null, 0.0, 0);
     }
 
     @Nested
