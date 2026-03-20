@@ -42,3 +42,6 @@ out/
 ### Production deploy files (EC2에서 직접 관리) ###
 docker-compose.prod.yml
 nginx/
+
+### AWS 설정 문서 (민감 정보 포함 가능) ###
+aws/
