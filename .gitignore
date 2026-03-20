@@ -38,3 +38,7 @@ out/
 
 ### Environment ###
 .env
+
+### Production deploy files (EC2에서 직접 관리) ###
+docker-compose.prod.yml
+nginx/

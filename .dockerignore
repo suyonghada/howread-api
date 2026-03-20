@@ -1,0 +1,14 @@
+.gradle/
+build/
+.git/
+.gitignore
+.env
+*.env
+**/.env
+**/build/
+.idea/
+*.iml
+*.log
+README.md
+HELP.md
+CLAUDE.md
