@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.howread.shared.entity.BaseEntity;
+
+import java.time.LocalDateTime;
 
 /**
  * ReviewLike 도메인 엔티티.
@@ -13,11 +17,9 @@ import org.howread.shared.entity.BaseEntity;
  * (userId, reviewId) unique 제약으로 중복 좋아요를 DB 레벨에서 방어한다.
  */
 @Entity
-@Table(name = "review_likes",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uq_review_likes_user_review", columnNames = {"user_id", "review_id"})
-        }
-)
+@Table(name = "review_likes")
+@SQLDelete(sql = "UPDATE review_likes SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReviewLike extends BaseEntity {
@@ -31,6 +33,9 @@ public class ReviewLike extends BaseEntity {
 
     @Column(name = "review_id", nullable = false)
     private Long reviewId;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     public static ReviewLike create(Long userId, Long reviewId) {
         ReviewLike reviewLike = new ReviewLike();

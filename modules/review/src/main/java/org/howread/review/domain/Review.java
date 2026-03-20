@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.howread.shared.entity.BaseEntity;
+
+import java.time.LocalDateTime;
 
 /**
  * Review 도메인 엔티티 (Rich Domain Model) - 텍스트 리뷰 전용.
@@ -21,11 +25,10 @@ import org.howread.shared.entity.BaseEntity;
                 @Index(name = "idx_reviews_book_id", columnList = "book_id"),
                 @Index(name = "idx_reviews_user_id", columnList = "user_id"),
                 @Index(name = "idx_reviews_like_count_id", columnList = "like_count, id")
-        },
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uq_reviews_user_book", columnNames = {"user_id", "book_id"})
         }
 )
+@SQLDelete(sql = "UPDATE reviews SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
@@ -45,6 +48,9 @@ public class Review extends BaseEntity {
 
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     /**
      * 텍스트 리뷰 생성 팩토리 메서드.

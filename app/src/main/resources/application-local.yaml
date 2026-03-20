@@ -13,3 +13,5 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  flyway:
+    enabled: false  # 로컬은 H2 + ddl-auto로 스키마 관리, Flyway는 prod에서만 사용
