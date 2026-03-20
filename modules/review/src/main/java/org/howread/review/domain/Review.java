@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
  * 별점(Rating)과 완전히 분리된 구조다.
  * 별점 없이 텍스트 리뷰만 남길 수 있고, 텍스트 리뷰 없이 별점만 남길 수도 있다.
  *
- * 1인 1책 1리뷰 정책을 DB 레벨 unique 제약으로 보장한다.
+ * 1인 1책 1리뷰 정책을 앱 레벨(ReviewService)에서 보장한다.
+ * 소프트 딜리트 후 재작성을 허용하기 위해 DB unique 제약 대신 앱 레벨 검증을 사용한다.
  * likeCount를 비정규화하여 좋아요 기준 정렬 시 COUNT JOIN을 방지한다.
  */
 @Entity

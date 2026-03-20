@@ -12,7 +12,9 @@ public record BookResponse(
         String publisher,
         LocalDate publishedDate,
         String thumbnailUrl,
-        String description
+        String description,
+        double averageRating,
+        int ratingCount
 ) {
     public static BookResponse from(Book book) {
         return new BookResponse(
@@ -23,7 +25,9 @@ public record BookResponse(
                 book.getPublisher(),
                 book.getPublishedDate(),
                 book.getThumbnailUrl(),
-                book.getDescription()
+                book.getDescription(),
+                book.getAverageRating(),
+                book.getRatingCount()
         );
     }
 }
