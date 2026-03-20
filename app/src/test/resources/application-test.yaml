@@ -34,7 +34,8 @@ aws:
   cloudfront:
     domain: test.cloudfront.net
 
-kakao:
+aladin:
   api:
-    key: test-kakao-key
-    book-search-url: http://localhost:8080/mock/kakao
+    ttbkey: test-aladin-key
+    search-url: http://localhost:8080/mock/aladin/search
+    lookup-url: http://localhost:8080/mock/aladin/lookup
