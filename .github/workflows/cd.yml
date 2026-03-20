@@ -61,8 +61,8 @@ jobs:
             --parameters 'commands=[
               "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}",
               "cd /opt/howread",
-              "ECR_REGISTRY=${{ secrets.ECR_REGISTRY }} ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }} docker compose -f docker-compose.prod.yml pull app",
-              "ECR_REGISTRY=${{ secrets.ECR_REGISTRY }} ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }} docker compose -f docker-compose.prod.yml up -d --no-deps app",
+              "ECR_REGISTRY=${{ secrets.ECR_REGISTRY }} ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }} docker-compose -f docker-compose.prod.yml pull app",
+              "ECR_REGISTRY=${{ secrets.ECR_REGISTRY }} ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY }} docker-compose -f docker-compose.prod.yml up -d --no-deps app",
               "docker image prune -f"
             ]' \
             --query "Command.CommandId" \
