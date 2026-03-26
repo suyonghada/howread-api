@@ -5,9 +5,11 @@ import org.howread.review.application.dto.CreateReviewRequest;
 import org.howread.review.application.dto.ReviewPageResponse;
 import org.howread.review.application.dto.ReviewResponse;
 import org.howread.review.application.dto.UpdateReviewRequest;
+import org.howread.review.application.dto.UserSummary;
 import org.howread.review.application.port.BookExistencePort;
 import org.howread.review.application.port.ReviewLikeRepository;
 import org.howread.review.application.port.ReviewRepository;
+import org.howread.review.application.port.UserInfoPort;
 import org.howread.review.domain.Review;
 import org.howread.review.domain.ReviewLike;
 import org.howread.review.domain.ReviewSortType;
@@ -24,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -47,6 +50,9 @@ class ReviewServiceTest {
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private UserInfoPort userInfoPort;
 
     @InjectMocks
     private ReviewService reviewService;
@@ -89,6 +95,8 @@ class ReviewServiceTest {
             given(bookExistencePort.existsById(bookId)).willReturn(true);
             given(reviewRepository.existsByUserIdAndBookId(userId, bookId)).willReturn(false);
             given(reviewRepository.save(any(Review.class))).willReturn(saved);
+            given(userInfoPort.findSummariesByIds(anyCollection()))
+                    .willReturn(Map.of(userId, new UserSummary(userId, "tester", null)));
 
             ReviewResponse response = reviewService.createReview(userId, bookId, request);
 
@@ -137,6 +145,8 @@ class ReviewServiceTest {
 
             given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
             given(reviewLikeRepository.existsByUserIdAndReviewId(userId, reviewId)).willReturn(false);
+            given(userInfoPort.findSummariesByIds(anyCollection()))
+                    .willReturn(Map.of(userId, new UserSummary(userId, "tester", null)));
 
             ReviewResponse response = reviewService.updateReview(userId, reviewId,
                     new UpdateReviewRequest("수정된 내용"));
@@ -291,6 +301,9 @@ class ReviewServiceTest {
             given(reviewRepository.countByBookId(bookId)).willReturn(2L);
             given(reviewLikeRepository.findReviewIdsByUserIdAndReviewIdIn(userId, List.of(1L, 2L)))
                     .willReturn(Set.of(1L));
+            given(userInfoPort.findSummariesByIds(anyCollection()))
+                    .willReturn(Map.of(2L, new UserSummary(2L, "author1", null),
+                                       3L, new UserSummary(3L, "author2", null)));
 
             ReviewPageResponse response = reviewService.getBookReviews(bookId, ReviewSortType.LIKES_DESC, 0, 20, userId);
 
@@ -308,6 +321,8 @@ class ReviewServiceTest {
             given(reviewRepository.findByBookId(bookId, ReviewSortType.LIKES_DESC, 0, 20))
                     .willReturn(List.of(review));
             given(reviewRepository.countByBookId(bookId)).willReturn(1L);
+            given(userInfoPort.findSummariesByIds(anyCollection()))
+                    .willReturn(Map.of(2L, new UserSummary(2L, "author1", null)));
 
             ReviewPageResponse response = reviewService.getBookReviews(bookId, ReviewSortType.LIKES_DESC, 0, 20, null);
 

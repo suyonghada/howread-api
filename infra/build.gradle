@@ -5,6 +5,7 @@
 
 dependencies {
     implementation project(':common')
+    implementation project(':modules:shared')
     implementation project(':modules:book')
     implementation project(':modules:review')
     implementation project(':modules:user')
