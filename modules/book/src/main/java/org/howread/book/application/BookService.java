@@ -12,6 +12,7 @@ import org.howread.book.application.port.BookSearchPort;
 import org.howread.book.domain.Book;
 import org.howread.common.exception.BusinessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -44,8 +45,11 @@ public class BookService {
      * <p>
      * DB 조회 → 이미 있으면 즉시 반환, 없으면 외부 API 조회 후 저장한다.
      * <p>
-     * 외부 API 호출을 @Transactional 범위 밖에서 수행한다. 카카오 API 응답이 1~2초 걸리는 동안 DB 커넥션을 점유하면 동시 요청이 많을 때 커넥션 풀이 고갈되기 때문이다.
+     * NOT_SUPPORTED: 클래스 레벨 readOnly=true 트랜잭션이 이 메서드에 전파되지 않도록 한다.
+     * 외부 API 호출 중 DB 커넥션을 점유하지 않기 위해 트랜잭션 없이 실행되어야 하며,
+     * 실제 쓰기는 BookRegistrar.register()가 자체 @Transactional로 처리한다.
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public BookResponse registerBook(String isbn) {
         return bookRepository.findByIsbn(isbn)
                 .map(BookResponse::from)
