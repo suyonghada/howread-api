@@ -6,9 +6,11 @@ import org.howread.review.application.dto.CreateReviewRequest;
 import org.howread.review.application.dto.ReviewPageResponse;
 import org.howread.review.application.dto.ReviewResponse;
 import org.howread.review.application.dto.UpdateReviewRequest;
+import org.howread.review.application.dto.UserSummary;
 import org.howread.review.application.port.BookExistencePort;
 import org.howread.review.application.port.ReviewLikeRepository;
 import org.howread.review.application.port.ReviewRepository;
+import org.howread.review.application.port.UserInfoPort;
 import org.howread.review.domain.Review;
 import org.howread.review.domain.ReviewLike;
 import org.howread.review.domain.ReviewSortType;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,11 +37,11 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewLikeRepository reviewLikeRepository;
     private final BookExistencePort bookExistencePort;
+    private final UserInfoPort userInfoPort;
     private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 텍스트 리뷰를 작성한다.
-     * 별점 없이 텍스트만으로 리뷰를 남길 수 있다.
      */
     @Transactional
     public ReviewResponse createReview(Long userId, Long bookId, CreateReviewRequest request) {
@@ -54,7 +57,8 @@ public class ReviewService {
 
         eventPublisher.publishEvent(ReviewCreatedEvent.of(saved.getId(), bookId));
 
-        return ReviewResponse.from(saved, false, false);
+        UserSummary author = userInfoPort.findSummariesByIds(List.of(userId)).get(userId);
+        return ReviewResponse.from(saved, author, false, true, false);
     }
 
     /**
@@ -68,7 +72,8 @@ public class ReviewService {
         review.update(request.content());
 
         boolean isLikedByMe = reviewLikeRepository.existsByUserIdAndReviewId(userId, reviewId);
-        return ReviewResponse.from(review, isLikedByMe, false);
+        UserSummary author = userInfoPort.findSummariesByIds(List.of(userId)).get(userId);
+        return ReviewResponse.from(review, author, isLikedByMe, true, false);
     }
 
     /**
@@ -117,7 +122,7 @@ public class ReviewService {
     /**
      * 책의 텍스트 리뷰 목록을 조회한다.
      *
-     * 비인증 사용자(currentUserId=null)에게는 content=null, isBlurred=true로 응답한다.
+     * 비인증 사용자(currentUserId=null)에게는 content/nickname=null, isBlurred=true로 응답한다.
      */
     public ReviewPageResponse getBookReviews(Long bookId, ReviewSortType sortType,
                                               int page, int size, Long currentUserId) {
@@ -126,13 +131,24 @@ public class ReviewService {
 
         boolean isAuthenticated = currentUserId != null;
         List<Long> reviewIds = reviews.stream().map(Review::getId).toList();
+        List<Long> authorIds = reviews.stream().map(Review::getUserId).distinct().toList();
 
         Set<Long> likedIds = isAuthenticated && !reviewIds.isEmpty()
                 ? reviewLikeRepository.findReviewIdsByUserIdAndReviewIdIn(currentUserId, reviewIds)
                 : Set.of();
 
+        Map<Long, UserSummary> authorMap = !authorIds.isEmpty()
+                ? userInfoPort.findSummariesByIds(authorIds)
+                : Map.of();
+
         List<ReviewResponse> responses = reviews.stream()
-                .map(r -> ReviewResponse.from(r, likedIds.contains(r.getId()), !isAuthenticated))
+                .map(r -> ReviewResponse.from(
+                        r,
+                        authorMap.get(r.getUserId()),
+                        likedIds.contains(r.getId()),
+                        isAuthenticated && r.getUserId().equals(currentUserId),
+                        !isAuthenticated
+                ))
                 .toList();
 
         return ReviewPageResponse.of(responses, page, size, totalCount);
@@ -150,8 +166,10 @@ public class ReviewService {
                 ? reviewLikeRepository.findReviewIdsByUserIdAndReviewIdIn(userId, reviewIds)
                 : Set.of();
 
+        UserSummary author = userInfoPort.findSummariesByIds(List.of(userId)).get(userId);
+
         List<ReviewResponse> responses = reviews.stream()
-                .map(r -> ReviewResponse.from(r, likedIds.contains(r.getId()), false))
+                .map(r -> ReviewResponse.from(r, author, likedIds.contains(r.getId()), true, false))
                 .toList();
 
         return ReviewPageResponse.of(responses, page, size, totalCount);
