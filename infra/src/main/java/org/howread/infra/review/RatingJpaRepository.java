@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface RatingJpaRepository extends JpaRepository<Rating, Long> {
 
     Optional<Rating> findByUserIdAndBookId(Long userId, Long bookId);
+
+    long countByBookId(Long bookId);
 }

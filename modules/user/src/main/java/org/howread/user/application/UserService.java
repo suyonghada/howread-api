@@ -7,7 +7,10 @@ import org.howread.user.application.port.*;
 import org.howread.user.domain.EmailVerification;
 import org.howread.user.domain.RefreshToken;
 import org.howread.user.domain.User;
+import org.howread.user.domain.UserRole;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -251,6 +254,29 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
         user.changePassword(passwordEncoder.encode(request.newPassword()));
+    }
+
+    /** 관리자용: 전체 사용자 목록 조회 */
+    public List<AdminUserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(u -> new AdminUserResponse(
+                        u.getId(),
+                        u.getEmail(),
+                        u.getNickname(),
+                        u.getProfileImageKey() != null ? profileImagePort.buildUrl(u.getProfileImageKey()) : null,
+                        u.getRole().name(),
+                        u.getCreatedAt(),
+                        u.getLastLoginAt()
+                ))
+                .toList();
+    }
+
+    /** 관리자용: 특정 사용자의 권한을 변경한다. */
+    @Transactional
+    public void changeUserRole(Long targetUserId, UserRole newRole) {
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+        user.changeRole(newRole);
     }
 
     private TokenResponse issueTokens(User user) {

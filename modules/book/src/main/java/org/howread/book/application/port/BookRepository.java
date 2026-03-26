@@ -16,6 +16,8 @@ public interface BookRepository {
 
     Book save(Book book);
 
+    void delete(Book book);
+
     /**
      * 커서 기반 페이지네이션.
      *

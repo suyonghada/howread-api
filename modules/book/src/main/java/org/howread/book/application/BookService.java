@@ -9,6 +9,7 @@ import org.howread.book.application.dto.BookSearchResponse;
 import org.howread.book.application.dto.BookSearchResult;
 import org.howread.book.application.port.BookRepository;
 import org.howread.book.application.port.BookSearchPort;
+import org.howread.book.application.port.UserContentExistencePort;
 import org.howread.book.domain.Book;
 import org.howread.common.exception.BusinessException;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BookSearchPort bookSearchPort;
     private final BookRegistrar bookRegistrar;
+    private final UserContentExistencePort userContentExistencePort;
 
     /**
      * 외부 API로 책 검색. DB에 저장하지 않고 검색 결과만 반환한다.
@@ -99,6 +101,23 @@ public class BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BusinessException(BookErrorCode.BOOK_NOT_FOUND));
         book.changeRating(oldRating, newRating);
+    }
+
+    /**
+     * 책을 DB에서 삭제한다 (Hard Delete).
+     * <p>
+     * 리뷰 또는 평점이 존재하는 경우 삭제를 거부하여 사용자 데이터가 유실되지 않도록 보호한다.
+     * DB에 FK 제약이 없으므로 앱 레벨에서 명시적으로 차단한다.
+     */
+    @Transactional
+    public void deleteBook(Long bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BusinessException(BookErrorCode.BOOK_NOT_FOUND));
+        if (userContentExistencePort.hasReviewForBook(bookId)
+                || userContentExistencePort.hasRatingForBook(bookId)) {
+            throw new BusinessException(BookErrorCode.BOOK_HAS_USER_DATA);
+        }
+        bookRepository.delete(book);
     }
 
     /**

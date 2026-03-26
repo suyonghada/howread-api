@@ -45,6 +45,17 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
     }
 
+    /**
+     * 책 삭제 (관리자 전용).
+     * 리뷰 또는 평점이 존재하면 409 Conflict 반환.
+     * SecurityConfig에서 ADMIN 권한만 허용하도록 설정되어 있다.
+     */
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<ApiResponse<Void>> deleteBook(@PathVariable Long bookId) {
+        bookService.deleteBook(bookId);
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
     /** DB에서 책 단건 조회 */
     @GetMapping("/{bookId}")
     public ResponseEntity<ApiResponse<BookResponse>> getBook(
