@@ -43,6 +43,11 @@ public class BookRepositoryAdapter implements BookRepository {
     }
 
     @Override
+    public void delete(Book book) {
+        jpaRepository.delete(book);
+    }
+
+    @Override
     public List<Book> findBooksBeforeCursor(Long cursorId, int size) {
         return jpaRepository.findBooksBeforeCursor(cursorId, size);
     }

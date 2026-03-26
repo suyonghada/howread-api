@@ -5,6 +5,7 @@ import org.howread.user.application.port.UserRepository;
 import org.howread.user.domain.User;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -42,5 +43,10 @@ public class UserRepositoryAdapter implements UserRepository {
     @Override
     public User save(User user) {
         return jpaRepository.save(user);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return jpaRepository.findAll();
     }
 }
